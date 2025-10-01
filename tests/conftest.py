@@ -1,10 +1,25 @@
 """
-    Dummy conftest.py for reeve_python_sdk.
-
-    If you don't know what this is for, just leave it empty.
-    Read more about conftest.py under:
-    - https://docs.pytest.org/en/stable/fixture.html
-    - https://docs.pytest.org/en/stable/writing_plugins.html
+Test configuration and fixtures for reeve_python_sdk.
 """
 
-# import pytest
+import pytest
+from aioresponses import aioresponses
+
+
+@pytest.fixture
+def mock_aiohttp():
+    """Fixture to mock aiohttp responses."""
+    with aioresponses() as m:
+        yield m
+
+
+@pytest.fixture
+def api_url():
+    """Fixture for API URL."""
+    return "https://api.reeve.example.com"
+
+
+@pytest.fixture
+def api_key():
+    """Fixture for API key."""
+    return "test-api-key-12345"
