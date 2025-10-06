@@ -8,6 +8,7 @@ import aiohttp
 from .exceptions import (
     APIError,
     AuthenticationError,
+    ConflictError,
     NotFoundError,
     ReeveAPIError,
     ValidationError,
@@ -114,6 +115,7 @@ class BaseClient:
             AuthenticationError: For 401 responses
             ValidationError: For 400 responses
             NotFoundError: For 404 responses
+            ConflictError: For 409 responses
             APIError: For other error responses
         """
         try:
@@ -132,6 +134,8 @@ class BaseClient:
                 raise ValidationError(error_message, response.status, data)
             elif response.status == 404:
                 raise NotFoundError(error_message, response.status, data)
+            elif response.status == 409:
+                raise ConflictError(error_message, response.status, data)
             else:
                 raise APIError(error_message, response.status, data)
 

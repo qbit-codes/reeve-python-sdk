@@ -10,10 +10,14 @@ This is a Python SDK for the **Reeve API** - a facial recognition service for pe
 
 The SDK provides access to the following Reeve API capabilities:
 
-- **Authentication**: Token-based authentication (Bearer JWT)
+- **Authentication**:
+  - Username/password login (returns JWT token)
+  - User registration (Admin only)
+  - Password change
+  - Bearer JWT token support
 - **Person Management**: Create, list, edit, and delete persons
 - **Face Management**: Add, list, and delete face images for persons
-- **Face Recognition**: Identify unknown faces against enrolled persons
+- **Face Recognition**: Identify unknown faces against enrolled persons with confidence scores and face attributes
 - **Face Verification**:
   - Verify a face against a specific person
   - Compare two faces to determine if they match
@@ -84,20 +88,51 @@ pip install -e .[testing]
 The SDK is built with an async-first architecture using aiohttp:
 
 - **client.py**: Base async HTTP client with authentication and error handling
-- **exceptions.py**: Custom exception hierarchy for different error types
-- **models.py**: Data models (Person, APIResponse) with serialization
-- **auth.py**: Authentication module for token management
+- **exceptions.py**: Custom exception hierarchy (AuthenticationError, ValidationError, NotFoundError, ConflictError, APIError)
+- **models.py**: Data models with serialization:
+  - Core: Person, Face, FaceAttributes, UserInfo
+  - Auth: LoginResponse, RegisterResponse, ChangePasswordResponse
+  - Recognition: IdentifyResult, VerificationResult, SubjectVerificationResult
+  - Generic: APIResponse
+- **auth.py**: Authentication module with login, register, and password change
 - **person.py**: Person CRUD operations
 - **face.py**: Face management, recognition, and verification
 - **subject.py**: Direct face-to-face comparison
 - **__init__.py**: Main ReeveClient that combines all modules
 
 ### Usage Pattern
-All operations are async and use context managers:
+All operations are async and use context managers. Two authentication methods are supported:
+
+**Method 1: Username/Password (Auto-login)**
 ```python
-async with ReeveClient(api_url="...", api_key="...") as client:
+async with ReeveClient(
+    api_url="https://api.reeve.example.com",
+    username="admin",
+    password="password123"
+) as client:
     person = await client.person.add(firstname="John", lastname="Doe")
-    faces = await client.face.list(person_id=person["id"])
+    faces = await client.face.list(person_id=person["result"]["id"])
+```
+
+**Method 2: Direct API Key**
+```python
+async with ReeveClient(
+    api_url="https://api.reeve.example.com",
+    api_key="your-jwt-token"
+) as client:
+    person = await client.person.add(firstname="John", lastname="Doe")
+```
+
+### Response Structure
+All API responses follow the structure:
+```python
+{
+    "success": bool,
+    "error": dict | None,
+    "result": T | None,
+    "statusCode": int,
+    "timestamp": str
+}
 ```
 
 ### Version Management

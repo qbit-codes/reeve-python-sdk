@@ -42,11 +42,12 @@ This SDK provides a Python interface to interact with the Reeve API, enabling fa
 Features
 ========
 
-* **Authentication** - Token-based authentication with Bearer JWT
+* **Authentication** - Username/password login, user registration, password management, and Bearer JWT support
 * **Person Management** - Create, list, update, and delete persons
 * **Face Management** - Add, list, and delete face images for persons
-* **Face Recognition** - Identify unknown faces against enrolled persons
+* **Face Recognition** - Identify unknown faces with confidence scores and face attributes
 * **Face Verification** - Verify faces against specific persons or compare two faces
+* **Rich Data Models** - Strongly-typed models for all API responses including face attributes
 
 Installation
 ============
@@ -67,15 +68,24 @@ Development Installation
 Quick Start
 ===========
 
+Authentication Methods
+----------------------
+
+The SDK supports two authentication methods:
+
+**Method 1: Username/Password (Recommended)**
+
 .. code-block:: python
 
     import asyncio
     from reeve_python_sdk import ReeveClient
 
     async def main():
+        # Auto-login with username and password
         async with ReeveClient(
             api_url="https://api.reeve.example.com",
-            api_key="your-api-key"
+            username="your-username",
+            password="your-password"
         ) as client:
             # Create a person
             person = await client.person.add(firstname="John", lastname="Doe")
@@ -92,6 +102,70 @@ Quick Start
                     print(f"Recognized: {result['result']['name']}")
 
     asyncio.run(main())
+
+**Method 2: Direct API Key**
+
+.. code-block:: python
+
+    import asyncio
+    from reeve_python_sdk import ReeveClient
+
+    async def main():
+        # Use existing JWT token
+        async with ReeveClient(
+            api_url="https://api.reeve.example.com",
+            api_key="your-jwt-token"
+        ) as client:
+            persons = await client.person.list()
+            print(persons)
+
+    asyncio.run(main())
+
+Advanced Usage
+--------------
+
+**Manual Login**
+
+.. code-block:: python
+
+    async with ReeveClient(api_url="https://api.reeve.example.com") as client:
+        # Login manually
+        login_response = await client.auth.login(
+            username="admin",
+            password="password123"
+        )
+        print(f"Token: {login_response.token}")
+        print(f"Expires: {login_response.expires_at}")
+
+**User Registration (Admin only)**
+
+.. code-block:: python
+
+    async with ReeveClient(
+        api_url="https://api.reeve.example.com",
+        api_key="admin-token"
+    ) as client:
+        response = await client.auth.register(
+            username="newuser",
+            email="user@example.com",
+            password="secure-password",
+            role="User"
+        )
+        print(response.message)
+
+**Change Password**
+
+.. code-block:: python
+
+    async with ReeveClient(
+        api_url="https://api.reeve.example.com",
+        api_key="user-token"
+    ) as client:
+        response = await client.auth.change_password(
+            current_password="old-password",
+            new_password="new-password"
+        )
+        print(response.message)
 
 API Documentation
 =================

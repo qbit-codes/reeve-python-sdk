@@ -39,6 +39,13 @@ class NotFoundError(ReeveAPIError):
         super().__init__(message, status_code, response)
 
 
+class ConflictError(ReeveAPIError):
+    """Raised when a resource conflict occurs (409 Conflict)."""
+
+    def __init__(self, message: str = "Resource conflict", status_code: int = 409, response: dict = None):
+        super().__init__(message, status_code, response)
+
+
 class APIError(ReeveAPIError):
     """Raised for general API errors (5xx Server Errors)."""
 
